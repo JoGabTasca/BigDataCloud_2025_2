@@ -39,7 +39,7 @@ class MainBot(ActivityHandler):
             if member_added.id != turn_context.activity.recipient.id:
                 await turn_context.send_activity(
                     MessageFactory.text(
-                        f"Seja bem vindo(a) ao bot de atendimento do IBMEC EVENTOS "
+                        f"Seja bem vindo(a) ao bot de atendimento do RESEVIA!"
                         f"Digite uma mensagem para iniciar o atendimento"
                     )
                 )
