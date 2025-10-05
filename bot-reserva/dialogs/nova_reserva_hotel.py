@@ -39,9 +39,9 @@ class NovaReservaHotelDialog(ComponentDialog):
         step_context.values["cliente"] = cliente
 
         prompt = MessageFactory.text(
-            f"✨ **Vamos encontrar sua hospedagem perfeita, {cliente.get('nome', '')}!**\n\n"
-            f"🏨 Que emoção! Vou te ajudar a reservar uma estadia incrível.\n\n"
-            f"🌍 **Em qual cidade você gostaria de se hospedar?**\n"
+            f"✨ **Vamos planejar sua estadia perfeita, {cliente.get('nome', '')}!**\n\n"
+            f"🏨 Que emoção! Vou te ajudar a reservar uma hospedagem incrível.\n\n"
+            f"🗺️ **Em qual cidade você gostaria de se hospedar?**\n"
             f"*Ex: São Paulo, Rio de Janeiro, Salvador, Gramado...*"
         )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
@@ -50,9 +50,9 @@ class NovaReservaHotelDialog(ComponentDialog):
         step_context.values["cidade"] = step_context.result
 
         prompt = MessageFactory.text(
-            "🏙️ **Excelente escolha de destino!**\n\n"
-            "📅 **Quando você gostaria de fazer o check-in?**\n"
-            "*Digite a data de entrada no formato DD/MM/AAAA*\n\n"
+            "🏙️ **Perfeito! Excelente escolha de destino!**\n\n"
+            "Quando você gostaria de chegar ao seu refúgio?\n"
+            "*Digite a data de check-in no formato DD/MM/AAAA*\n\n"
             "📝 Exemplo: 15/12/2025"
         )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
@@ -73,7 +73,7 @@ class NovaReservaHotelDialog(ComponentDialog):
 
         prompt = MessageFactory.text(
             "👥 **Estamos quase lá!**\n\n"
-            "Quantas pessoas vão aproveitar essa hospedagem?\n"
+            "Quantas pessoas vão aproveitar essa estadia incrível?\n"
             "*Digite apenas o número total de hóspedes*\n\n"
             "📝 Exemplo: 1, 2, 3, 4..."
         )
@@ -90,8 +90,8 @@ class NovaReservaHotelDialog(ComponentDialog):
         ]
 
         prompt = MessageFactory.text(
-            "🌟 **Última pergunta! Vamos escolher seu conforto!**\n\n"
-            "🛏️ Que tipo de quarto você gostaria para sua estadia?"
+            "🌟 **Última pergunta!**\n\n"
+            "Que tipo de experiência você gostaria de ter na sua hospedagem?"
         )
         return await step_context.prompt(
             ChoicePrompt.__name__,

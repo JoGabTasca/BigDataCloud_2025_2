@@ -35,11 +35,19 @@ class CancelarReservaDialog(ComponentDialog):
         self.initial_dialog_id = "CancelarReservaDialog"
 
     async def pedir_cpf_step(self, step_context: WaterfallStepContext):
-        message = MessageFactory.text("Por favor, informe seu CPF para acessar suas reservas:")
+        message = MessageFactory.text(
+            "✨ **Vamos cuidar do seu cancelamento!**\n\n"
+            "📋 Entendo que às vezes os planos mudam, e estou aqui para te ajudar.\n\n"
+            "🔐 **Para acessar suas reservas, informe seu CPF:**\n"
+            "*Ex: 123.456.789-00*"
+        )
 
         prompt_options = PromptOptions(
             prompt=message,
-            retry_prompt=MessageFactory.text("Por favor, informe um CPF válido.")
+            retry_prompt=MessageFactory.text(
+                "😅 **Ops! Parece que o CPF não está no formato correto...**\n\n"
+                "Por favor, informe um CPF válido no formato: 123.456.789-00"
+            )
         )
         return await step_context.prompt(TextPrompt.__name__, prompt_options)
 
@@ -51,7 +59,11 @@ class CancelarReservaDialog(ComponentDialog):
         cliente = await self.api_client.get_cliente_by_cpf(cpf)
         if not cliente:
             await step_context.context.send_activity(
-                MessageFactory.text("CPF não encontrado no sistema. Verifique o número informado.")
+                MessageFactory.text(
+                    "🔍 **Hmm... Não encontrei esse CPF no nosso sistema...**\n\n"
+                    "🤔 Pode verificar se digitou corretamente?\n\n"
+                    "📞 Se o problema persistir, nossa equipe de suporte está sempre disponível para te ajudar!"
+                )
             )
             return await step_context.end_dialog()
 
@@ -62,7 +74,10 @@ class CancelarReservaDialog(ComponentDialog):
             Choice("Reservas de Hospedagem")
         ]
 
-        prompt = MessageFactory.text("Que tipo de reserva você gostaria de cancelar?")
+        prompt = MessageFactory.text(
+            "🌟 **Perfeito! Encontrei seu perfil!**\n\n"
+            "Que tipo de reserva você gostaria de cancelar?"
+        )
         return await step_context.prompt(
             ChoicePrompt.__name__,
             PromptOptions(prompt=prompt, choices=choices)
@@ -79,14 +94,21 @@ class CancelarReservaDialog(ComponentDialog):
 
             if not reservas_ativas:
                 await step_context.context.send_activity(
-                    MessageFactory.text("Você não possui reservas de voo ativas para cancelar.")
+                    MessageFactory.text(
+                        "✈️ **Que interessante!**\n\n"
+                        "Você não possui reservas de voo ativas para cancelar no momento.\n\n"
+                        "✨ **Isso significa que você está livre para planejar novas aventuras!**"
+                    )
                 )
                 return await step_context.end_dialog()
 
             step_context.values["reservas"] = reservas_ativas
 
             choices = []
-            mensagem = "**Suas reservas de voo ativas:**\n\n"
+            mensagem = (
+                "✨ **Aqui estão suas reservas de voo ativas:**\n\n"
+                "✈️ Escolha qual você gostaria de cancelar:\n\n"
+            )
             for i, reserva in enumerate(reservas_ativas):
                 data_partida = reserva.get('dataHoraPartida', 'N/A')
                 if data_partida and 'T' in data_partida:
@@ -102,14 +124,21 @@ class CancelarReservaDialog(ComponentDialog):
 
             if not reservas_ativas:
                 await step_context.context.send_activity(
-                    MessageFactory.text("Você não possui reservas de hospedagem ativas para cancelar.")
+                    MessageFactory.text(
+                        "🏨 **Que interessante!**\n\n"
+                        "Você não possui reservas de hospedagem ativas para cancelar no momento.\n\n"
+                        "✨ **Isso significa que você está livre para planejar novas estadas!**"
+                    )
                 )
                 return await step_context.end_dialog()
 
             step_context.values["reservas"] = reservas_ativas
 
             choices = []
-            mensagem = "**Suas reservas de hospedagem ativas:**\n\n"
+            mensagem = (
+                "✨ **Aqui estão suas reservas de hospedagem ativas:**\n\n"
+                "🏨 Escolha qual você gostaria de cancelar:\n\n"
+            )
             for i, reserva in enumerate(reservas_ativas):
                 choice_text = f"Reserva {i+1}: {reserva['nomeHotel']} - {reserva['cidade']}"
                 choices.append(Choice(choice_text))
@@ -157,25 +186,36 @@ class CancelarReservaDialog(ComponentDialog):
                               f"• **Check-out:** {reserva_selecionada['dataCheckOut']}"
 
                 await step_context.context.send_activity(
-                    MessageFactory.text(f"✅ **Cancelamento processado com sucesso!**\n\n"
-                                       f"Sua reserva foi cancelada:\n"
-                                       f"• **Tipo:** {tipo_reserva}\n"
-                                       f"• **ID da Reserva:** {reserva_selecionada['id']}\n"
-                                       f"{detalhes}\n"
-                                       f"• **Status:** Cancelada\n\n"
-                                       f"Você receberá um email de confirmação em breve.")
+                    MessageFactory.text(
+                        f"🎉 **Pronto! Cancelamento processado com sucesso!**\n\n"
+                        f"✨ Sua reserva foi cancelada conforme solicitado:\n\n"
+                        f"📝 **Detalhes do cancelamento:**\n"
+                        f"• **Tipo:** {tipo_reserva}\n"
+                        f"• **ID da Reserva:** {reserva_selecionada['id']}\n"
+                        f"{detalhes}\n"
+                        f"• **Status:** Cancelada\n\n"
+                        f"📧 **Já estou preparando seu e-mail de confirmação!**\n"
+                        f"Você receberá todos os detalhes em instantes."
+                    )
                 )
             else:
                 # Erro no cancelamento
                 await step_context.context.send_activity(
-                    MessageFactory.text("❌ **Erro no cancelamento**\n\n"
-                                       "Não foi possível processar o cancelamento da sua reserva. "
-                                       "Tente novamente mais tarde ou entre em contato com nosso suporte.")
+                    MessageFactory.text(
+                        "😔 **Ops! Algo não saiu como esperado...**\n\n"
+                        "Tivemos uma dificuldade técnica para processar o cancelamento da sua reserva. "
+                        "Mas não se preocupe!\n\n"
+                        "🔄 **Pode tentar novamente em alguns minutos?**\n"
+                        "Ou se preferir, nossa equipe de suporte está sempre disponível para te ajudar."
+                    )
                 )
         except (ValueError, IndexError):
             await step_context.context.send_activity(
-                MessageFactory.text("❌ Erro: Reserva não encontrada.")
+                MessageFactory.text(
+                    "🤔 **Hmm... Houve um probleminha...**\n\n"
+                    "Não consegui localizar essa reserva.\n\n"
+                    "🔄 **Pode tentar novamente?**"
+                )
             )
 
         return await step_context.end_dialog()
-        
