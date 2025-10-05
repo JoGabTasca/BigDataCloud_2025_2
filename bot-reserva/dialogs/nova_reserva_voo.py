@@ -63,8 +63,9 @@ class NovaReservaVooDialog(ComponentDialog):
         prompt = MessageFactory.text(
             "📅 **Ótima escolha de destino!**\n\n"
             "Quando você gostaria de viajar?\n"
-            "*Digite a data de partida no formato DD/MM/AAAA*\n\n"
-            "📝 Exemplo: 15/12/2025"
+            "*Digite a data e horário de partida no formato DD/MM/AAAA HH:MM*\n\n"
+            "📝 Exemplo: 15/12/2025 14:30\n"
+            "⏰ *Use horário de 24h (ex: 14:30 para 2:30 da tarde)*"
         )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
@@ -77,8 +78,9 @@ class NovaReservaVooDialog(ComponentDialog):
             "Como trabalhamos sempre com passagens de ida e volta para "
             "você ter mais flexibilidade...\n\n"
             "📅 **Quando você pretende voltar?**\n"
-            "*Digite a data de retorno no formato DD/MM/AAAA*\n\n"
-            "📝 Exemplo: 22/12/2025"
+            "*Digite a data e horário de retorno no formato DD/MM/AAAA HH:MM*\n\n"
+            "📝 Exemplo: 22/12/2025 16:45\n"
+            "⏰ *Use horário de 24h (ex: 16:45 para 4:45 da tarde)*"
         )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
@@ -121,13 +123,15 @@ class NovaReservaVooDialog(ComponentDialog):
         classe = step_context.values.get("classe", "Econômica")
         passageiros = step_context.values.get("passageiros")
 
-        # Converter data do formato DD/MM/AAAA para AAAA-MM-DDTHH:mm:ss
-        def converter_data(data_str):
-            if data_str and data_str != "Não informada":
+        # Converter data e hora do formato DD/MM/AAAA HH:MM para AAAA-MM-DDTHH:mm:ss
+        def converter_data_hora(data_hora_str):
+            if data_hora_str and data_hora_str != "Não informada":
                 try:
-                    # Converte DD/MM/AAAA para AAAA-MM-DDTHH:mm:ss
-                    dia, mes, ano = data_str.split('/')
-                    return f"{ano}-{mes.zfill(2)}-{dia.zfill(2)}T10:00:00"
+                    # Converte DD/MM/AAAA HH:MM para AAAA-MM-DDTHH:mm:ss
+                    data_parte, hora_parte = data_hora_str.strip().split(' ')
+                    dia, mes, ano = data_parte.split('/')
+                    hora, minuto = hora_parte.split(':')
+                    return f"{ano}-{mes.zfill(2)}-{dia.zfill(2)}T{hora.zfill(2)}:{minuto.zfill(2)}:00"
                 except:
                     return "2025-12-01T10:00:00"  # Data padrão
             return "2025-12-01T10:00:00"
@@ -136,8 +140,8 @@ class NovaReservaVooDialog(ComponentDialog):
         reserva_data = {
             "origem": origem,
             "destino": destino,
-            "dataHoraPartida": converter_data(data_partida),
-            "dataHoraVolta": converter_data(data_volta),
+            "dataHoraPartida": converter_data_hora(data_partida),
+            "dataHoraVolta": converter_data_hora(data_volta),
             "companhiaAerea": "LATAM",
             "numeroVoo": "LT1001",
             "assento": "12A",
@@ -156,8 +160,8 @@ class NovaReservaVooDialog(ComponentDialog):
                     f"✨ {cliente.get('nome', '')}, tudo certo para sua aventura!\n\n"
                     f"🎫 **Detalhes da sua reserva:**\n"
                     f"✈️ **Trajeto:** {origem} → {destino}\n"
-                    f"📅 **Ida:** {data_partida}\n"
-                    f"🔄 **Volta:** {data_volta}\n"
+                    f"� **Partida:** {data_partida}\n"
+                    f"� **Retorno:** {data_volta}\n"
                     f"💺 **Classe:** {classe}\n"
                     f"👥 **Passageiros:** {passageiros}\n"
                     f"🏷️ **Código:** VOO{result.get('id', 'N/A')}\n\n"
