@@ -52,7 +52,7 @@ class MainDialog(ComponentDialog):
                 "Estou aqui para tornar sua experiência de viagem incrível. Posso te ajudar com:\n\n"
                 "✈️ **Voos** - Consultar, reservar ou gerenciar suas viagens aéreas\n"
                 "🏨 **Hotéis** - Encontrar e reservar hospedagens incríveis\n"
-                "📋 **Minhas Reservas** - Visualizar ou cancelar reservas existentes\n\n"
+                "❌ **Cancelar Reservas** - Visualizar e cancelar reservas existentes\n\n"
                 "🎯 **O que você gostaria de fazer hoje?**"
             )
             user_profile["welcomed"] = True
@@ -64,7 +64,7 @@ class MainDialog(ComponentDialog):
         choices = [
             Choice("✈️ Voos e Passagens"),
             Choice("🏨 Hotéis e Hospedagem"),
-            Choice("📋 Minhas Reservas"),
+            Choice("❌ Cancelar Reservas"),
             Choice("💡 Preciso de Ajuda")
         ]
 
@@ -84,7 +84,7 @@ class MainDialog(ComponentDialog):
         elif option == "🏨 Hotéis e Hospedagem":
             # Inicia o dialogo de consulta de hoteis
             return await step_context.begin_dialog("ConsultarHoteisDialog")
-        elif option == "📋 Minhas Reservas":
+        elif option == "❌ Cancelar Reservas":
             return await step_context.begin_dialog("CancelarReservaDialog")
         elif option == "💡 Preciso de Ajuda":
             help_message = (
@@ -96,7 +96,7 @@ class MainDialog(ComponentDialog):
                 "🎯 **O que posso fazer por você:**\n"
                 "✈️ **Voos**: Consultar, reservar passagens e gerenciar viagens\n"
                 "🏨 **Hotéis**: Encontrar e reservar hospedagens\n"
-                "📋 **Reservas**: Ver detalhes ou cancelar suas reservas\n\n"
+                "❌ **Cancelar Reservas**: Visualizar detalhes e cancelar suas reservas\n\n"
                 "📌 **Informações úteis:**\n"
                 "• Primeira vez aqui? Criaremos sua conta automaticamente\n"
                 "• Todas as informações ficam seguras no nosso sistema\n"
