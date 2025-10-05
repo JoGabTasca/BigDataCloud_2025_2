@@ -5,13 +5,13 @@ from botbuilder.dialogs import WaterfallDialog, WaterfallStepContext
 from botbuilder.dialogs.choices import Choice
 
 class MainDialog(ComponentDialog):
-    
+
     def __init__(self, user_state: UserState):
         super(MainDialog, self).__init__("MainDialog")
-        
+
         #Grava na memoria aonde o usuário está no fluxo de conversa
         self.user_state = user_state
-        
+
         #Registro do Prompt de escolha
         self.add_dialog(ChoicePrompt(ChoicePrompt.__name__))
 
@@ -39,35 +39,35 @@ class MainDialog(ComponentDialog):
             )
         )
         self.initial_dialog_id = "MainDialog"
-        
+
     async def prompt_option_step(self, step_context: WaterfallStepContext):
         # Verificar se é a primeira vez (mensagem de boas-vindas) ou retorno
         user_profile_accessor = self.user_state.create_property("user_profile")
         user_profile = await user_profile_accessor.get(step_context.context, lambda: {})
-        
+
         if not user_profile.get("welcomed", False):
             # Primeira vez - mostrar boas-vindas
             welcome_message = (
-                "🤖 **Bem-vindo ao Bot de Reservas!**\n\n"
-                "Posso te ajudar com:\n"
-                "✈️ Consulta de voos e suas reservas\n"
-                "🏨 Consulta de hotéis e hospedagens\n" 
-                "❌ Cancelamento de reservas\n\n"
-                "**Escolha uma opção abaixo:**"
+                "✨ **Perfeito! Agora vamos começar!**\n\n"
+                "Estou aqui para tornar sua experiência de viagem incrível. Posso te ajudar com:\n\n"
+                "✈️ **Voos** - Consultar, reservar ou gerenciar suas viagens aéreas\n"
+                "🏨 **Hotéis** - Encontrar e reservar hospedagens incríveis\n"
+                "📋 **Minhas Reservas** - Visualizar ou cancelar reservas existentes\n\n"
+                "🎯 **O que você gostaria de fazer hoje?**"
             )
             user_profile["welcomed"] = True
             await user_profile_accessor.set(step_context.context, user_profile)
         else:
             # Retorno ao menu - mensagem simples
-            welcome_message = "🔄 **Menu Principal**\n\nEscolha uma opção:"
-        
+            welcome_message = "🏠 **Estou aqui novamente para te ajudar!**\n\n🎯 O que você precisa fazer hoje?"
+
         choices = [
-            Choice("🛩️ Consultar Voos"),
-            Choice("🏨 Consultar Hotéis"),
-            Choice("❌ Cancelar Reserva"),
-            Choice("ℹ️ Ajuda")
+            Choice("✈️ Voos e Passagens"),
+            Choice("🏨 Hotéis e Hospedagem"),
+            Choice("📋 Minhas Reservas"),
+            Choice("💡 Preciso de Ajuda")
         ]
-        
+
         return await step_context.prompt(
             ChoicePrompt.__name__,
             PromptOptions(
@@ -77,38 +77,38 @@ class MainDialog(ComponentDialog):
         )
     async def process_option_step(self, step_context: WaterfallStepContext):
         option = step_context.result.value
-        
-        if option == "🛩️ Consultar Voos":
+
+        if option == "✈️ Voos e Passagens":
             # Inicia o dialogo de consulta de voos
             return await step_context.begin_dialog("ConsultarVooDialog")
-        elif option == "🏨 Consultar Hotéis":
+        elif option == "🏨 Hotéis e Hospedagem":
             # Inicia o dialogo de consulta de hoteis
             return await step_context.begin_dialog("ConsultarHoteisDialog")
-        elif option == "❌ Cancelar Reserva":
+        elif option == "📋 Minhas Reservas":
             return await step_context.begin_dialog("CancelarReservaDialog")
-        elif option == "ℹ️ Ajuda":
+        elif option == "💡 Preciso de Ajuda":
             help_message = (
-                "ℹ️ **Central de Ajuda - Bot de Reservas**\n\n"
-                "**Como usar o bot:**\n"
-                "1️⃣ Selecione uma opção no menu principal\n"
-                "2️⃣ Informe seu CPF quando solicitado\n"
-                "3️⃣ Siga as instruções do bot\n\n"
-                "**Funcionalidades disponíveis:**\n"
-                "• **Consultar Voos:** Veja suas reservas ou fazer nova reserva\n"
-                "• **Consultar Hotéis:** Veja suas reservas ou fazer nova reserva\n"
-                "• **Cancelar Reserva:** Cancele suas reservas ativas\n\n"
-                "**Informações importantes:**\n"
-                "• Se você não tem cadastro, o sistema fará automaticamente\n"
-                "• Use seu CPF para acessar suas informações\n"
-                "• Todas as reservas são salvas no sistema\n\n"
-                "🔄 **Retornando ao menu principal...**"
+                "🤝 **Estou aqui para te ajudar!**\n\n"
+                "💼 **Como funciona nosso atendimento:**\n"
+                "1️⃣ Escolha o que precisa no menu principal\n"
+                "2️⃣ Me informe seu CPF para acessar sua conta\n"
+                "3️⃣ Siga minhas orientações - é super fácil!\n\n"
+                "🎯 **O que posso fazer por você:**\n"
+                "✈️ **Voos**: Consultar, reservar passagens e gerenciar viagens\n"
+                "🏨 **Hotéis**: Encontrar e reservar hospedagens\n"
+                "📋 **Reservas**: Ver detalhes ou cancelar suas reservas\n\n"
+                "📌 **Informações úteis:**\n"
+                "• Primeira vez aqui? Criaremos sua conta automaticamente\n"
+                "• Todas as informações ficam seguras no nosso sistema\n"
+                "• Estou disponível 24h para te atender\n\n"
+                "🏠 **Voltando ao menu principal...**"
             )
             await step_context.context.send_activity(MessageFactory.text(help_message))
             return await step_context.replace_dialog("MainDialog")
-        
+
         # Retorna ao menu principal após qualquer ação
         return await step_context.replace_dialog("MainDialog")
-    
+
     async def return_to_menu_step(self, step_context: WaterfallStepContext):
         # Este step sempre retorna ao menu principal após qualquer diálogo
         return await step_context.replace_dialog("MainDialog")

@@ -41,22 +41,33 @@ class ConsultarVooDialog(ComponentDialog):
         self.initial_dialog_id = "ConsultarVooDialog"
 
     async def pedir_cpf_step(self, step_context: WaterfallStepContext):
-        prompt = MessageFactory.text("✈️ **Consulta de Voos**\n\nPor favor, informe seu CPF para acessar o sistema:")
+        prompt = MessageFactory.text(
+            "✈️ **Vamos decolar juntos!**\n\n"
+            "Para acessar suas informações e oferecer o melhor atendimento, "
+            "preciso que você me informe seu CPF:\n\n"
+            "📝 *Digite apenas os números (sem pontos ou traços)*"
+        )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
     async def verificar_cliente_step(self, step_context: WaterfallStepContext):
         cpf = step_context.result
         step_context.values["cpf"] = cpf
-        
+
         # Verificar se o cliente existe
         cliente = await self.api_client.get_cliente_by_cpf(cpf)
-        
+
         if not cliente:
             # Cliente não existe, iniciar cadastro
             await step_context.context.send_activity(
-                MessageFactory.text("🔍 CPF não encontrado no sistema.\n\nVamos fazer seu cadastro para continuar!")
+                MessageFactory.text(
+                    "🎉 **Que ótimo! Você é novo por aqui!**\n\n"
+                    "Não encontrei seu CPF no nosso sistema, mas não se preocupe. "
+                    "Vou fazer um cadastro rapidinho para você e em poucos minutos "
+                    "teremos tudo pronto!\n\n"
+                    "📝 **Vamos começar seu cadastro:**"
+                )
             )
-            
+
             return await step_context.begin_dialog("CadastroClienteDialog", {"cpf": cpf})
         else:
             # Cliente existe, salvar dados e prosseguir
@@ -67,28 +78,32 @@ class ConsultarVooDialog(ComponentDialog):
         # Se retornamos do cadastro, usar o cliente cadastrado
         if step_context.result and isinstance(step_context.result, dict):
             step_context.values["cliente"] = step_context.result
-        
+
         cliente = step_context.values["cliente"]
-        
+
         choices = [
-            Choice("📋 Minhas reservas"),
-            Choice("➕ Fazer nova reserva"),
-            Choice("🔍 Buscar voos disponíveis")
+            Choice("📋 Ver minhas viagens"),
+            Choice("✈️ Reservar nova viagem"),
+            Choice("🔍 Explorar destinos")
         ]
-        
-        prompt = MessageFactory.text(f"👋 **Olá, {cliente['nome']}!**\n\nO que você gostaria de fazer?")
+
+        prompt = MessageFactory.text(
+            f"👋 **Olá, {cliente['nome']}! É um prazer te atender!**\n\n"
+            f"Estou aqui para tornar sua experiência de viagem incrível. "
+            f"O que podemos fazer juntos hoje?"
+        )
         return await step_context.prompt(
-            ChoicePrompt.__name__, 
+            ChoicePrompt.__name__,
             PromptOptions(prompt=prompt, choices=choices)
         )
 
     async def processar_step(self, step_context: WaterfallStepContext):
         escolha = step_context.result.value
         cliente = step_context.values["cliente"]
-        
-        if escolha == "📋 Minhas reservas":
+
+        if escolha == "📋 Ver minhas viagens":
             reservas = await self.api_client.get_reservas_voo_by_cliente(cliente["id"])
-            
+
             if not reservas:
                 await step_context.context.send_activity(
                     MessageFactory.text("📭 Você não possui reservas de voo no momento.\n\nQue tal fazer uma nova reserva?")
@@ -99,25 +114,23 @@ class ConsultarVooDialog(ComponentDialog):
                     status_emoji = "✅" if reserva["status"] == "CONFIRMADA" else "⏳"
                     mensagem += f"{status_emoji} **Reserva {i}:**\n"
                     mensagem += f"• **Rota:** {reserva['origem']} → {reserva['destino']}\n"
-                    mensagem += f"• **Data/Hora Partida:** {reserva['dataHoraPartida']}\n"
-                    mensagem += f"• **Data/Hora Chegada:** {reserva['dataHoraChegada']}\n"
-                    if reserva.get('dataHoraVolta'):
-                        mensagem += f"• **Data volta:** {reserva['dataHoraVolta']}\n"
+                    mensagem += f"• **Data Partida:** {reserva['dataHoraPartida']}\n"
+                    mensagem += f"• **Data Volta:** {reserva['dataHoraVolta']}\n"
                     mensagem += f"• **Companhia:** {reserva['companhiaAerea']}\n"
                     mensagem += f"• **Voo:** {reserva['numeroVoo']}\n"
                     mensagem += f"• **Assento:** {reserva['assento']}\n"
                     mensagem += f"• **Classe:** {reserva['classe']}\n"
                     mensagem += f"• **Preço:** R$ {reserva['preco']}\n"
                     mensagem += f"• **Status:** {reserva['status']}\n\n"
-                
+
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
-        
-        elif escolha == "➕ Fazer nova reserva":
+
+        elif escolha == "✈️ Reservar nova viagem":
             return await step_context.begin_dialog("NovaReservaVooDialog", {"cliente": cliente})
-        
-        elif escolha == "🔍 Buscar voos disponíveis":
+
+        elif escolha == "🔍 Explorar destinos":
             todas_reservas = await self.api_client.get_all_reservas_voo()
-            
+
             if not todas_reservas:
                 await step_context.context.send_activity(
                     MessageFactory.text("📭 Não há voos disponíveis no momento.")
@@ -127,16 +140,13 @@ class ConsultarVooDialog(ComponentDialog):
                 for i, voo in enumerate(todas_reservas, 1):
                     mensagem += f"✈️ **Voo {i}:**\n"
                     mensagem += f"• **Rota:** {voo['origem']} → {voo['destino']}\n"
-                    mensagem += f"• **Data/Hora Partida:** {voo['dataHoraPartida']}\n"
-                    mensagem += f"• **Data/Hora Chegada:** {voo['dataHoraChegada']}\n"
-                    if voo.get('dataHoraVolta'):
-                        mensagem += f"• **Data volta:** {voo['dataHoraVolta']}\n"
+                    mensagem += f"• **Data Partida:** {voo['dataHoraPartida']}\n"
+                    mensagem += f"• **Data Volta:** {voo['dataHoraVolta']}\n"
                     mensagem += f"• **Companhia:** {voo['companhiaAerea']}\n"
                     mensagem += f"• **Voo:** {voo['numeroVoo']}\n"
                     mensagem += f"• **Preço:** R$ {voo['preco']}\n"
                     mensagem += f"• **Status:** {voo['status']}\n\n"
-                
+
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
-        
+
         return await step_context.end_dialog()
-        

@@ -5,8 +5,8 @@ from helpers.DialogHelper import DialogHelper
 
 
 class MainBot(ActivityHandler):
-    
-    def __init__(self, 
+
+    def __init__(self,
                  dialog: Dialog,
                  conversation_state: ConversationState,
                  user_state: UserState
@@ -14,15 +14,15 @@ class MainBot(ActivityHandler):
         self.dialog = dialog
         self.conversation_state = conversation_state
         self.user_state = user_state
-        
+
     async def on_turn(self, turn_context):
         await super().on_turn(turn_context)
-        
+
         #Save any state changes on conversation
         await self.conversation_state.save_changes(turn_context)
         await self.user_state.save_changes(turn_context)
-     
-        
+
+
     async def on_message_activity(self, turn_context: TurnContext):
         await DialogHelper.run_dialog(
             self.dialog,
@@ -39,7 +39,11 @@ class MainBot(ActivityHandler):
             if member_added.id != turn_context.activity.recipient.id:
                 await turn_context.send_activity(
                     MessageFactory.text(
-                        f"Seja bem vindo(a) ao bot de atendimento do RESEVIA!"
-                        f"Digite uma mensagem para iniciar o atendimento"
+                        "🌟 **Olá! Seja muito bem-vindo(a) ao RESEVIA!**\n\n"
+                        "Sou seu assistente virtual e estou aqui para te ajudar com:\n"
+                        "✈️ Reservas de voos\n"
+                        "🏨 Reservas de hotéis\n"
+                        "📋 Consultas e cancelamentos\n\n"
+                        "💬 **Digite qualquer mensagem para começarmos!**"
                     )
                 )

@@ -39,26 +39,47 @@ class NovaReservaVooDialog(ComponentDialog):
         cliente = step_context.options.get("cliente", {})
         step_context.values["cliente"] = cliente
 
-        prompt = MessageFactory.text(f"✈️ **Nova Reserva de Voo - {cliente.get('nome', '')}**\n\nDe qual cidade você gostaria de partir?")
+        prompt = MessageFactory.text(
+            f"✨ **Vamos planejar sua próxima aventura, {cliente.get('nome', '')}!**\n\n"
+            f"✈️ Que emoção! Vou te ajudar a reservar sua passagem.\n\n"
+            f"📍 **De qual cidade você vai decolar?**\n"
+            f"*Ex: São Paulo, Rio de Janeiro, Brasília...*"
+        )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
     async def solicitar_destino_step(self, step_context: WaterfallStepContext):
         step_context.values["origem"] = step_context.result
 
-        prompt = MessageFactory.text("🌍 Para qual cidade você gostaria de viajar?")
+        prompt = MessageFactory.text(
+            "🌍 **Perfeito! Agora me conta...**\n\n"
+            "Para qual destino incrível vamos te levar?\n"
+            "*Ex: Salvador, Fortaleza, Recife, Miami...*"
+        )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
     async def solicitar_data_partida_step(self, step_context: WaterfallStepContext):
         step_context.values["destino"] = step_context.result
 
-        prompt = MessageFactory.text("📅 Qual a data de partida? (formato: DD/MM/AAAA)")
+        prompt = MessageFactory.text(
+            "📅 **Ótima escolha de destino!**\n\n"
+            "Quando você gostaria de viajar?\n"
+            "*Digite a data de partida no formato DD/MM/AAAA*\n\n"
+            "📝 Exemplo: 15/12/2025"
+        )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
     async def solicitar_data_volta_step(self, step_context: WaterfallStepContext):
         # Salva a data de partida e pede diretamente a data de volta (ida e volta por padrão)
         step_context.values["data_partida"] = step_context.result
 
-        prompt = MessageFactory.text("🔄 Consideramos ida e volta por padrão. Qual a data de volta? (formato: DD/MM/AAAA)")
+        prompt = MessageFactory.text(
+            "🔄 **Estamos quase lá!**\n\n"
+            "Como trabalhamos sempre com passagens de ida e volta para "
+            "você ter mais flexibilidade...\n\n"
+            "📅 **Quando você pretende voltar?**\n"
+            "*Digite a data de retorno no formato DD/MM/AAAA*\n\n"
+            "📝 Exemplo: 22/12/2025"
+        )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
     async def solicitar_classe_step(self, step_context: WaterfallStepContext):
@@ -79,7 +100,12 @@ class NovaReservaVooDialog(ComponentDialog):
             # Se veio do ChoicePrompt, extrai o valor; caso venha diferente, tenta usar como string
             step_context.values["classe"] = getattr(chosen, "value", str(chosen))
 
-        prompt = MessageFactory.text("👥 Quantos passageiros? (digite o número)")
+        prompt = MessageFactory.text(
+            "👥 **Última pergunta!**\n\n"
+            "Quantas pessoas vão nessa aventura?\n"
+            "*Digite apenas o número total de passageiros*\n\n"
+            "📝 Exemplo: 1, 2, 3..."
+        )
         return await step_context.prompt(TextPrompt.__name__, PromptOptions(prompt=prompt))
 
     async def confirmar_reserva_step(self, step_context: WaterfallStepContext):
@@ -111,7 +137,7 @@ class NovaReservaVooDialog(ComponentDialog):
             "origem": origem,
             "destino": destino,
             "dataHoraPartida": converter_data(data_partida),
-            "dataHoraChegada": converter_data(data_volta) if data_volta != "Não informada" else converter_data(data_partida),
+            "dataHoraVolta": converter_data(data_volta),
             "companhiaAerea": "LATAM",
             "numeroVoo": "LT1001",
             "assento": "12A",
@@ -125,25 +151,31 @@ class NovaReservaVooDialog(ComponentDialog):
         result = await api_client.criar_reserva_voo(reserva_data)
 
         if result:
-            mensagem_confirmacao = (
-                f"✅ **Reserva de Voo Confirmada!**\n\n"
-                f"**Detalhes da Reserva:**\n"
-                f"• **Passageiro:** {cliente.get('nome', '')}\n"
-                f"• **Rota:** {origem} → {destino}\n"
-                f"• **Data de Partida:** {data_partida}\n"
-                f"• **Data de Volta:** {data_volta}\n"
-                f"• **Classe:** {classe}\n"
-                f"• **Passageiros:** {passageiros}\n"
-                f"• **Status:** Confirmada\n"
-                f"• **Código da Reserva:** VOO{result.get('id', 'N/A')}\n\n"
-                f"🎉 **Parabéns!** Sua reserva foi realizada com sucesso!\n"
-                f"Você receberá um e-mail de confirmação em breve."
-            )
+                mensagem_confirmacao = (
+                    f"🎉 **UHUL! Sua viagem está confirmada!**\n\n"
+                    f"✨ {cliente.get('nome', '')}, tudo certo para sua aventura!\n\n"
+                    f"🎫 **Detalhes da sua reserva:**\n"
+                    f"✈️ **Trajeto:** {origem} → {destino}\n"
+                    f"📅 **Ida:** {data_partida}\n"
+                    f"🔄 **Volta:** {data_volta}\n"
+                    f"💺 **Classe:** {classe}\n"
+                    f"👥 **Passageiros:** {passageiros}\n"
+                    f"🏷️ **Código:** VOO{result.get('id', 'N/A')}\n\n"
+                    f"📧 **Já estou preparando seu e-mail de confirmação!**\n"
+                    f"Você receberá todos os detalhes em instantes.\n\n"
+                    f"✨ **Tenha uma viagem incrível!**"
+                )
 
-            await step_context.context.send_activity(MessageFactory.text(mensagem_confirmacao))
+                await step_context.context.send_activity(MessageFactory.text(mensagem_confirmacao))
         else:
             await step_context.context.send_activity(
-                MessageFactory.text("❌ Erro ao criar reserva. Tente novamente mais tarde.")
+                MessageFactory.text(
+                    "😔 **Ops! Algo não saiu como esperado...**\n\n"
+                    "Tivemos uma dificuldade técnica para processar sua reserva. "
+                    "Mas não se preocupe!\n\n"
+                    "🔄 **Pode tentar novamente em alguns minutos?**\n"
+                    "Ou se preferir, nossa equipe de suporte está sempre disponível para te ajudar."
+                )
             )
 
         return await step_context.end_dialog()
@@ -156,7 +188,10 @@ class NovaReservaVooDialog(ComponentDialog):
             Choice("Primeira Classe")
         ]
 
-        prompt = MessageFactory.text("💺 Qual classe de voo você prefere?")
+        prompt = MessageFactory.text(
+            "🌟 **Agora vamos escolher seu conforto!**\n\n"
+            "Que tipo de experiência você gostaria de ter durante o voo?"
+        )
         return await step_context.prompt(
             ChoicePrompt.__name__,
             PromptOptions(prompt=prompt, choices=choices)
