@@ -73,9 +73,9 @@ class ConsultarHoteisDialog(ComponentDialog):
         cliente = step_context.values["cliente"]
 
         choices = [
-            Choice("📋 Minhas reservas"),
-            Choice("➕ Fazer nova reserva"),
-            Choice("🔍 Buscar hotéis disponíveis")
+            Choice("Minhas reservas"),
+            Choice("Fazer nova reserva"),
+            Choice("Buscar hotéis disponíveis")
         ]
 
         prompt = MessageFactory.text(
@@ -92,7 +92,7 @@ class ConsultarHoteisDialog(ComponentDialog):
         escolha = step_context.result.value
         cliente = step_context.values["cliente"]
 
-        if escolha == "📋 Minhas reservas":
+        if escolha == "Minhas reservas":
             reservas = await self.api_client.get_reservas_hospedagem_by_cliente(cliente["id"])
 
             if not reservas:
@@ -121,10 +121,10 @@ class ConsultarHoteisDialog(ComponentDialog):
 
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
 
-        elif escolha == "➕ Fazer nova reserva":
+        elif escolha == "Fazer nova reserva":
             return await step_context.begin_dialog("NovaReservaHotelDialog", {"cliente": cliente})
 
-        elif escolha == "🔍 Buscar hotéis disponíveis":
+        elif escolha == "Buscar hotéis disponíveis":
             todas_reservas = await self.api_client.get_all_reservas_hospedagem()
 
             if not todas_reservas:

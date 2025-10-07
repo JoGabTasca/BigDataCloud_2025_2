@@ -82,9 +82,9 @@ class ConsultarVooDialog(ComponentDialog):
         cliente = step_context.values["cliente"]
 
         choices = [
-            Choice("📋 Ver minhas viagens"),
-            Choice("✈️ Reservar nova viagem"),
-            Choice("🔍 Explorar destinos")
+            Choice("Ver minhas viagens"),
+            Choice("Reservar nova viagem"),
+            Choice("Explorar destinos")
         ]
 
         prompt = MessageFactory.text(
@@ -101,7 +101,7 @@ class ConsultarVooDialog(ComponentDialog):
         escolha = step_context.result.value
         cliente = step_context.values["cliente"]
 
-        if escolha == "📋 Ver minhas viagens":
+        if escolha == "Ver minhas viagens":
             reservas = await self.api_client.get_reservas_voo_by_cliente(cliente["id"])
 
             if not reservas:
@@ -125,10 +125,10 @@ class ConsultarVooDialog(ComponentDialog):
 
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
 
-        elif escolha == "✈️ Reservar nova viagem":
+        elif escolha == "Reservar nova viagem":
             return await step_context.begin_dialog("NovaReservaVooDialog", {"cliente": cliente})
 
-        elif escolha == "🔍 Explorar destinos":
+        elif escolha == "Explorar destinos":
             todas_reservas = await self.api_client.get_all_reservas_voo()
 
             if not todas_reservas:

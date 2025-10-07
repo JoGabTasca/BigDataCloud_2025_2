@@ -45,9 +45,16 @@ class MainDialog(ComponentDialog):
         user_profile_accessor = self.user_state.create_property("user_profile")
         user_profile = await user_profile_accessor.get(step_context.context, lambda: {})
 
+        choices = [
+            Choice("Voos e Passagens"),
+            Choice("Hotéis e Hospedagem"),
+            Choice("Cancelar Reservas"),
+            Choice("Preciso de Ajuda")
+        ]
+
         if not user_profile.get("welcomed", False):
             # Primeira vez - mostrar boas-vindas
-            welcome_message = (
+            welcome_message = MessageFactory.text(
                 "✨ **Perfeito! Agora vamos começar!**\n\n"
                 "Estou aqui para tornar sua experiência de viagem incrível. Posso te ajudar com:\n\n"
                 "✈️ **Voos** - Consultar, reservar ou gerenciar suas viagens aéreas\n"
@@ -59,34 +66,26 @@ class MainDialog(ComponentDialog):
             await user_profile_accessor.set(step_context.context, user_profile)
         else:
             # Retorno ao menu - mensagem simples
-            welcome_message = "🏠 **Estou aqui novamente para te ajudar!**\n\n🎯 O que você precisa fazer hoje?"
-
-        choices = [
-            Choice("✈️ Voos e Passagens"),
-            Choice("🏨 Hotéis e Hospedagem"),
-            Choice("❌ Cancelar Reservas"),
-            Choice("💡 Preciso de Ajuda")
-        ]
+            welcome_message = MessageFactory.text(
+                "🏠 **Estou aqui novamente para te ajudar!**\n\n🎯 O que você precisa fazer hoje?"
+            )
 
         return await step_context.prompt(
             ChoicePrompt.__name__,
-            PromptOptions(
-                prompt=MessageFactory.text(welcome_message),
-                choices=choices
-            )
+            PromptOptions(prompt=welcome_message, choices=choices)
         )
     async def process_option_step(self, step_context: WaterfallStepContext):
         option = step_context.result.value
 
-        if option == "✈️ Voos e Passagens":
+        if option == "Voos e Passagens":
             # Inicia o dialogo de consulta de voos
             return await step_context.begin_dialog("ConsultarVooDialog")
-        elif option == "🏨 Hotéis e Hospedagem":
+        elif option == "Hotéis e Hospedagem":
             # Inicia o dialogo de consulta de hoteis
             return await step_context.begin_dialog("ConsultarHoteisDialog")
-        elif option == "❌ Cancelar Reservas":
+        elif option == "Cancelar Reservas":
             return await step_context.begin_dialog("CancelarReservaDialog")
-        elif option == "💡 Preciso de Ajuda":
+        elif option == "Preciso de Ajuda":
             help_message = (
                 "🤝 **Estou aqui para te ajudar!**\n\n"
                 "💼 **Como funciona nosso atendimento:**\n"
