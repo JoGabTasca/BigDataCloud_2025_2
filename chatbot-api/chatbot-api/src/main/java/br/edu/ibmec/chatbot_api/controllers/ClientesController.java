@@ -24,7 +24,7 @@ public class ClientesController {
     private ClienteRepository clienteRepository;
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> getClientes() {
+    public ResponseEntity<Iterable<Cliente>> getClientes() {
         return ResponseEntity.ok(clienteRepository.findAll());
     }
 
