@@ -1,24 +1,30 @@
 package br.edu.ibmec.chatbot_api.models;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import java.util.List;
+
+import org.springframework.data.annotation.Id;
+
+import com.azure.spring.data.cosmos.core.mapping.Container;
+import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
+
 import lombok.Data;
 
 @Data // Gera getters, setters, toString, equals e hashCode automaticamente
-@Entity // Indica que essa classe é uma entidade do banco de dados
+@Container(containerName = "clientes")
 public class Cliente {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column
+    @Id
+    private String id;
+
     private String nome;
-    @Column
+
     private String email;
-    @Column
+
+    @PartitionKey
     private String cpf;
-    @Column
+
     private String telefone;
+
+    private List<ReservaVoo> reservasVoo;
+
+    private List<ReservaHospedagem> reservasHospedagem;
 }
