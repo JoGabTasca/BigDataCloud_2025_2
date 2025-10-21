@@ -142,11 +142,7 @@ class NovaReservaVooDialog(ComponentDialog):
             "destino": destino,
             "dataHoraPartida": converter_data_hora(data_partida),
             "dataHoraVolta": converter_data_hora(data_volta),
-            "companhiaAerea": "LATAM",
-            "numeroVoo": "LT1001",
-            "assento": "12A",
             "classe": classe.upper(),
-            "preco": 500.0,
             "status": "CONFIRMADA",
             "clienteId": cliente.get("id")
         }

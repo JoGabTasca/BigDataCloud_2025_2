@@ -116,7 +116,7 @@ class CancelarReservaDialog(ComponentDialog):
                 choice_text = f"Reserva {i+1}: {reserva['origem']} → {reserva['destino']} - {data_partida}"
                 choices.append(Choice(choice_text))
                 mensagem += f"**{i+1}.** {reserva['origem']} → {reserva['destino']}\n"
-                mensagem += f"   Data: {data_partida} | Companhia: {reserva['companhiaAerea']}\n\n"
+                mensagem += f"   Data: {data_partida} | Classe: {reserva.get('classe', 'N/A')}\n\n"
 
         else:  # hospedagem
             reservas = await self.api_client.get_reservas_hospedagem_by_cliente(cliente["id"])
@@ -178,7 +178,7 @@ class CancelarReservaDialog(ComponentDialog):
                         data_partida = data_partida.split('T')[0]
                     detalhes = f"• **Rota:** {reserva_selecionada['origem']} → {reserva_selecionada['destino']}\n" \
                               f"• **Data:** {data_partida}\n" \
-                              f"• **Companhia:** {reserva_selecionada['companhiaAerea']}"
+                              f"• **Classe:** {reserva_selecionada.get('classe', 'N/A')}"
                 else:
                     detalhes = f"• **Hotel:** {reserva_selecionada['nomeHotel']}\n" \
                               f"• **Cidade:** {reserva_selecionada['cidade']}\n" \

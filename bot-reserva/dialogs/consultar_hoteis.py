@@ -116,7 +116,7 @@ class ConsultarHoteisDialog(ComponentDialog):
                     mensagem += f"• **Check-in:** {reserva['dataCheckIn']}\n"
                     mensagem += f"• **Check-out:** {reserva['dataCheckOut']}\n"
                     mensagem += f"• **Tipo de quarto:** {reserva['tipoQuarto']}\n"
-                    mensagem += f"• **Preço:** R$ {reserva['precoTotal']}\n"
+                    mensagem += f"• **Número de hóspedes:** {reserva['numeroHospedes']}\n"
                     mensagem += f"• **Status:** {reserva['status']}\n\n"
 
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
@@ -144,14 +144,11 @@ class ConsultarHoteisDialog(ComponentDialog):
                     mensagem += f"🏨 **Hotel {i}:**\n"
                     mensagem += f"• **Nome:** {hotel['nomeHotel']}\n"
                     mensagem += f"• **Cidade:** {hotel['cidade']}\n"
-                    mensagem += f"• **Endereço:** {hotel['endereco']}\n"
                     mensagem += f"• **Check-in:** {hotel['dataCheckIn']}\n"
                     mensagem += f"• **Check-out:** {hotel['dataCheckOut']}\n"
                     mensagem += f"• **Tipo de quarto:** {hotel['tipoQuarto']}\n"
-                    mensagem += f"• **Preço total:** R$ {hotel['precoTotal']}\n"
+                    mensagem += f"• **Número de hóspedes:** {hotel['numeroHospedes']}\n"
                     mensagem += f"• **Status:** {hotel['status']}\n"
-                    if hotel.get('telefoneHotel'):
-                        mensagem += f"• **Telefone:** {hotel['telefoneHotel']}\n"
                     mensagem += "\n"
 
                 await step_context.context.send_activity(MessageFactory.text(mensagem))

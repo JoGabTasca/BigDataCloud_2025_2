@@ -127,9 +127,6 @@ class NovaReservaHotelDialog(ComponentDialog):
             "dataCheckOut": converter_data_hotel(checkout),
             "numeroHospedes": int(hospedes),
             "tipoQuarto": tipo_quarto,
-            "precoTotal": 200.0,
-            "precoPorNoite": 100.0,
-            "endereco": f"Rua Principal, 123 - {cidade}",
             "status": "CONFIRMADA",
             "clienteId": cliente["id"]
         }

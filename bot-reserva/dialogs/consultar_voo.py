@@ -116,11 +116,7 @@ class ConsultarVooDialog(ComponentDialog):
                     mensagem += f"• **Rota:** {reserva['origem']} → {reserva['destino']}\n"
                     mensagem += f"• **Data Partida:** {reserva['dataHoraPartida']}\n"
                     mensagem += f"• **Data Volta:** {reserva['dataHoraVolta']}\n"
-                    mensagem += f"• **Companhia:** {reserva['companhiaAerea']}\n"
-                    mensagem += f"• **Voo:** {reserva['numeroVoo']}\n"
-                    mensagem += f"• **Assento:** {reserva['assento']}\n"
                     mensagem += f"• **Classe:** {reserva['classe']}\n"
-                    mensagem += f"• **Preço:** R$ {reserva['preco']}\n"
                     mensagem += f"• **Status:** {reserva['status']}\n\n"
 
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
@@ -142,9 +138,7 @@ class ConsultarVooDialog(ComponentDialog):
                     mensagem += f"• **Rota:** {voo['origem']} → {voo['destino']}\n"
                     mensagem += f"• **Data Partida:** {voo['dataHoraPartida']}\n"
                     mensagem += f"• **Data Volta:** {voo['dataHoraVolta']}\n"
-                    mensagem += f"• **Companhia:** {voo['companhiaAerea']}\n"
-                    mensagem += f"• **Voo:** {voo['numeroVoo']}\n"
-                    mensagem += f"• **Preço:** R$ {voo['preco']}\n"
+                    mensagem += f"• **Classe:** {voo['classe']}\n"
                     mensagem += f"• **Status:** {voo['status']}\n\n"
 
                 await step_context.context.send_activity(MessageFactory.text(mensagem))
