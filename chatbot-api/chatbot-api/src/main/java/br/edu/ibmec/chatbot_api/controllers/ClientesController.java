@@ -1,6 +1,6 @@
 package br.edu.ibmec.chatbot_api.controllers;
 
-import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,19 +30,20 @@ public class ClientesController {
 
     @PostMapping
     public ResponseEntity<Cliente> createCliente(@RequestBody Cliente cliente) {
+        cliente.setId(UUID.randomUUID().toString());
         clienteRepository.save(cliente);
         return ResponseEntity.ok(cliente);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> updateCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
+    public ResponseEntity<Cliente> updateCliente(@PathVariable String id, @RequestBody Cliente cliente) {
         cliente.setId(id);
         clienteRepository.save(cliente);
         return ResponseEntity.ok(cliente);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCliente(@PathVariable String id) {
         clienteRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
