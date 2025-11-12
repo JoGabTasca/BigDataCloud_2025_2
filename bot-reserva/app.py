@@ -4,6 +4,10 @@
 import sys
 import traceback
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
