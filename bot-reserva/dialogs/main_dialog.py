@@ -27,6 +27,10 @@ class MainDialog(ComponentDialog):
         from .cancelar_reserva import CancelarReservaDialog
         self.add_dialog(CancelarReservaDialog(self.user_state))
 
+        #Registro do Dialogo de Ajuda
+        from .ajuda_dialog import AjudaDialog
+        self.add_dialog(AjudaDialog(self.user_state))
+
         #Registro de Funções de Conversação Sequencial
         self.add_dialog(
             WaterfallDialog(
@@ -85,25 +89,8 @@ class MainDialog(ComponentDialog):
             return await step_context.begin_dialog("ConsultarHoteisDialog")
         elif option == "Cancelar Reservas":
             return await step_context.begin_dialog("CancelarReservaDialog")
-        elif option == "Preciso de Ajuda":
-            help_message = (
-                "🤝 **Estou aqui para te ajudar!**\n\n"
-                "💼 **Como funciona nosso atendimento:**\n"
-                "1️⃣ Escolha o que precisa no menu principal\n"
-                "2️⃣ Me informe seu CPF para acessar sua conta\n"
-                "3️⃣ Siga minhas orientações - é super fácil!\n\n"
-                "🎯 **O que posso fazer por você:**\n"
-                "✈️ **Voos**: Consultar, reservar passagens e gerenciar viagens\n"
-                "🏨 **Hotéis**: Encontrar e reservar hospedagens\n"
-                "❌ **Cancelar Reservas**: Visualizar detalhes e cancelar suas reservas\n\n"
-                "📌 **Informações úteis:**\n"
-                "• Primeira vez aqui? Criaremos sua conta automaticamente\n"
-                "• Todas as informações ficam seguras no nosso sistema\n"
-                "• Estou disponível 24h para te atender\n\n"
-                "🏠 **Voltando ao menu principal...**"
-            )
-            await step_context.context.send_activity(MessageFactory.text(help_message))
-            return await step_context.replace_dialog("MainDialog")
+        elif option == "ℹ️ Ajuda":
+            return await step_context.begin_dialog("AjudaDialog")
 
         # Retorna ao menu principal após qualquer ação
         return await step_context.replace_dialog("MainDialog")
