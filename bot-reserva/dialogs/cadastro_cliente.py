@@ -1,3 +1,4 @@
+import uuid
 from botbuilder.dialogs import ComponentDialog
 from botbuilder.core import UserState, MessageFactory
 from botbuilder.dialogs.prompts import TextPrompt, PromptOptions
@@ -75,6 +76,7 @@ class CadastroClienteDialog(ComponentDialog):
         cpf = step_context.values["cpf"]
 
         new_cliente = {
+            "id": str(uuid.uuid4()),  # Gerar UUID para o Cosmos DB
             "nome": nome,
             "email": email,
             "telefone": telefone,

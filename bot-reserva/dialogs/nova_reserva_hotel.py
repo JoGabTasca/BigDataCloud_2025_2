@@ -34,7 +34,17 @@ class NovaReservaHotelDialog(ComponentDialog):
         self.initial_dialog_id = "NovaReservaHotelDialog"
 
     async def solicitar_cidade_step(self, step_context: WaterfallStepContext):
-        # Cliente já foi verificado anteriormente
+        # Cliente já foi verificado anteriormente - verifica se options existe
+        if step_context.options is None:
+            # Se não temos informações do cliente, precisamos ir para o fluxo principal
+            await step_context.context.send_activity(
+                MessageFactory.text(
+                    "🔐 **Para fazer uma reserva, preciso primeiro verificar seus dados.**\n\n"
+                    "Por favor, digite seu **CPF** para continuar:"
+                )
+            )
+            return await step_context.end_dialog()
+            
         cliente = step_context.options.get("cliente", {})
         step_context.values["cliente"] = cliente
 

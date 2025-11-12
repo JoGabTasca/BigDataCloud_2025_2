@@ -89,8 +89,12 @@ class MainDialog(ComponentDialog):
             return await step_context.begin_dialog("ConsultarHoteisDialog")
         elif option == "Cancelar Reservas":
             return await step_context.begin_dialog("CancelarReservaDialog")
-        elif option == "ℹ️ Ajuda":
-            return await step_context.begin_dialog("AjudaDialog")
+        elif option == "Preciso de Ajuda":
+            # Obter dados do cliente das opções do step_context
+            cliente = {}
+            if step_context.options and isinstance(step_context.options, dict):
+                cliente = step_context.options.get("cliente", {})
+            return await step_context.begin_dialog("AjudaDialog", {"cliente": cliente})
 
         # Retorna ao menu principal após qualquer ação
         return await step_context.replace_dialog("MainDialog")

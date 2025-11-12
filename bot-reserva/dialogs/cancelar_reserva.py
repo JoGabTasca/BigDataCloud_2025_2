@@ -85,6 +85,14 @@ class CancelarReservaDialog(ComponentDialog):
 
     async def listar_reservas_step(self, step_context: WaterfallStepContext):
         tipo_reserva = step_context.result.value
+        
+        # Verificar se temos cliente
+        if "cliente" not in step_context.values:
+            await step_context.context.send_activity(
+                MessageFactory.text("❌ Erro: Informações do cliente não encontradas. Retornando ao menu principal.")
+            )
+            return await step_context.end_dialog()
+            
         cliente = step_context.values["cliente"]
         step_context.values["tipo_reserva"] = tipo_reserva
 
