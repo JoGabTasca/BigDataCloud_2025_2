@@ -25,7 +25,8 @@ public class CosmosConfiguration extends AbstractCosmosConfiguration {
     CosmosClientBuilder cosmosClientBuilder() {
         return new CosmosClientBuilder()
             .endpoint(cosmosProperties.getUri())
-            .key(cosmosProperties.getKey());
+            .key(cosmosProperties.getKey())
+            .gatewayMode(); // Usa HTTPS (porta 443) ao invés de Direct TCP (portas 10000-20000)
     }
 
     @Bean

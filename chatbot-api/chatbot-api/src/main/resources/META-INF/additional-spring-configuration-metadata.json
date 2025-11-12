@@ -1,5 +1,27 @@
-{"properties": [{
-  "name": "spring.jpa.format-sql",
-  "type": "java.lang.String",
-  "description": "A description for 'spring.jpa.format-sql'"
-}]}
+{"properties": [
+  {
+    "name": "spring.jpa.format-sql",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.jpa.format-sql'"
+  },
+  {
+    "name": "azure.cosmos.uri",
+    "type": "java.lang.String",
+    "description": "A description for 'azure.cosmos.uri'"
+  },
+  {
+    "name": "azure.cosmos.key",
+    "type": "java.lang.String",
+    "description": "A description for 'azure.cosmos.key'"
+  },
+  {
+    "name": "azure.cosmos.database",
+    "type": "java.lang.String",
+    "description": "A description for 'azure.cosmos.database'"
+  },
+  {
+    "name": "azure.cosmos.connection-string",
+    "type": "java.lang.String",
+    "description": "A description for 'azure.cosmos.connection-string'"
+  }
+]}
