@@ -114,7 +114,7 @@ class ConsultarVooDialog(ComponentDialog):
         cliente = step_context.values["cliente"]
 
         if escolha == "Ver minhas viagens":
-            reservas = await self.api_client.get_reservas_voo_by_cliente(cliente["id"])
+            reservas = await self.api_client.get_reservas_voo_by_cliente_id(cliente["id"])
 
             if not reservas:
                 await step_context.context.send_activity(

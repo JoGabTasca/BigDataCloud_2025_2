@@ -105,7 +105,7 @@ class ConsultarHoteisDialog(ComponentDialog):
         cliente = step_context.values["cliente"]
 
         if escolha == "Minhas reservas":
-            reservas = await self.api_client.get_reservas_hospedagem_by_cliente(cliente["id"])
+            reservas = await self.api_client.get_reservas_hospedagem_by_cliente_id(cliente["id"])
 
             if not reservas:
                 await step_context.context.send_activity(
