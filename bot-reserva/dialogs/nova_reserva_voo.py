@@ -146,6 +146,29 @@ class NovaReservaVooDialog(ComponentDialog):
                     return "2025-12-01T10:00:00"  # Data padrão
             return "2025-12-01T10:00:00"
 
+        # Buscar cliente pelo CPF para garantir que temos o ID
+        cliente_atualizado = None
+        if "cpf" in cliente:
+            cliente_atualizado = await self.api_client.get_cliente_by_cpf(cliente["cpf"])
+        
+        # Se não conseguimos buscar pelo CPF ou não tem CPF, usar o cliente atual
+        if not cliente_atualizado:
+            cliente_atualizado = cliente
+        
+        # Verificar se temos ID do cliente
+        cliente_id = cliente_atualizado.get("id")
+        if not cliente_id:
+            await step_context.context.send_activity(
+                MessageFactory.text(
+                    "❌ **Ops! Tivemos um problema técnico.**\n\n"
+                    "Não conseguimos identificar sua conta no sistema. "
+                    "Por favor, tente novamente ou entre em contato com nosso suporte."
+                )
+            )
+            return await step_context.end_dialog()
+
+        print(f"DEBUG: Criando reserva para cliente ID: {cliente_id}")
+
         # Criar reserva na API
         reserva_data = {
             "origem": origem,
@@ -154,8 +177,10 @@ class NovaReservaVooDialog(ComponentDialog):
             "dataHoraVolta": converter_data_hora(data_volta),
             "classe": classe.upper(),
             "status": "CONFIRMADA",
-            "clienteId": cliente.get("id")
+            "clienteId": cliente_id
         }
+
+        print(f"ENVIANDO DADOS PARA API: {reserva_data}")
 
         api_client = self.api_client
         result = await api_client.criar_reserva_voo(reserva_data)
@@ -163,11 +188,11 @@ class NovaReservaVooDialog(ComponentDialog):
         if result:
                 mensagem_confirmacao = (
                     f"🎉 **UHUL! Sua viagem está confirmada!**\n\n"
-                    f"✨ {cliente.get('nome', '')}, tudo certo para sua aventura!\n\n"
+                    f"✨ {cliente_atualizado.get('nome', '')}, tudo certo para sua aventura!\n\n"
                     f"🎫 **Detalhes da sua reserva:**\n"
                     f"✈️ **Trajeto:** {origem} → {destino}\n"
-                    f"� **Partida:** {data_partida}\n"
-                    f"� **Retorno:** {data_volta}\n"
+                    f"📅 **Partida:** {data_partida}\n"
+                    f"🔄 **Retorno:** {data_volta}\n"
                     f"💺 **Classe:** {classe}\n"
                     f"👥 **Passageiros:** {passageiros}\n"
                     f"🏷️ **Código:** VOO{result.get('id', 'N/A')}\n\n"

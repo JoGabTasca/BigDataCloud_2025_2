@@ -88,7 +88,7 @@ class AjudaDialog(ComponentDialog):
             return await step_context.begin_dialog("NovaReservaVooDialog", {"cliente": cliente})
         elif top_intent == "CancelarVoo":
             #Comeca o dialog de cancelamento de voo passando o cliente
-            return await step_context.begin_dialog("CancelarVooDialog", {"cliente": cliente})
+            return await step_context.begin_dialog("CancelarReservaDialog", {"cliente": cliente})
         elif top_intent == "CancelarHotel":
             #Comeca o dialog de cancelamento de hotel passando o cliente
             return await step_context.begin_dialog("CancelarReservaDialog", {"cliente": cliente})

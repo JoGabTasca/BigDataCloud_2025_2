@@ -78,6 +78,22 @@ class ApiClient:
                 self.logger.error(f"Erro na requisição para reservas de voo: {e}")
                 return []
 
+    async def get_reservas_voo_by_cliente_id(self, cliente_id: str) -> List[Dict]:
+        """Busca reservas de voo por ID do cliente (do documento no Cosmos DB)"""
+        try:
+            cliente = await self.get_cliente_by_id(cliente_id)
+            if cliente:
+                reservas = cliente.get('reservasVoo', []) or []
+                print(f"DEBUG - Cliente {cliente.get('nome')} tem {len(reservas)} reservas de voo")
+                return reservas
+            else:
+                print(f"DEBUG - Cliente com ID {cliente_id} não encontrado")
+                return []
+        except Exception as e:
+            self.logger.error(f"Erro ao buscar reservas de voo por ID: {e}")
+            print(f"DEBUG - Erro ao buscar reservas: {e}")
+            return []
+
     async def get_reservas_hospedagem_by_cliente(self, cliente_cpf: str) -> List[Dict]:
         """Busca reservas de hospedagem por CPF do cliente (do documento no Cosmos DB)"""
         async with aiohttp.ClientSession() as session:
@@ -97,6 +113,22 @@ class ApiClient:
             except Exception as e:
                 self.logger.error(f"Erro na requisição para reservas de hospedagem: {e}")
                 return []
+
+    async def get_reservas_hospedagem_by_cliente_id(self, cliente_id: str) -> List[Dict]:
+        """Busca reservas de hospedagem por ID do cliente (do documento no Cosmos DB)"""
+        try:
+            cliente = await self.get_cliente_by_id(cliente_id)
+            if cliente:
+                reservas = cliente.get('reservasHospedagem', []) or []
+                print(f"DEBUG - Cliente {cliente.get('nome')} tem {len(reservas)} reservas de hospedagem")
+                return reservas
+            else:
+                print(f"DEBUG - Cliente com ID {cliente_id} não encontrado")
+                return []
+        except Exception as e:
+            self.logger.error(f"Erro ao buscar reservas de hospedagem por ID: {e}")
+            print(f"DEBUG - Erro ao buscar reservas hospedagem: {e}")
+            return []
 
     async def get_all_reservas_voo(self) -> List[Dict]:
         """Busca todas as reservas de voo de todos os clientes"""
