@@ -34,7 +34,17 @@ class NovaReservaHotelDialog(ComponentDialog):
         self.initial_dialog_id = "NovaReservaHotelDialog"
 
     async def solicitar_cidade_step(self, step_context: WaterfallStepContext):
-        # Cliente já foi verificado anteriormente
+        # Cliente já foi verificado anteriormente - verifica se options existe
+        if step_context.options is None:
+            # Se não temos informações do cliente, precisamos ir para o fluxo principal
+            await step_context.context.send_activity(
+                MessageFactory.text(
+                    "🔐 **Para fazer uma reserva, preciso primeiro verificar seus dados.**\n\n"
+                    "Por favor, digite seu **CPF** para continuar:"
+                )
+            )
+            return await step_context.end_dialog()
+            
         cliente = step_context.options.get("cliente", {})
         step_context.values["cliente"] = cliente
 
@@ -120,6 +130,29 @@ class NovaReservaHotelDialog(ComponentDialog):
             except:
                 return "2025-12-01"  # Data padrão
 
+        # Buscar cliente pelo CPF para garantir que temos o ID
+        cliente_atualizado = None
+        if "cpf" in cliente:
+            cliente_atualizado = await self.api_client.get_cliente_by_cpf(cliente["cpf"])
+        
+        # Se não conseguimos buscar pelo CPF ou não tem CPF, usar o cliente atual
+        if not cliente_atualizado:
+            cliente_atualizado = cliente
+        
+        # Verificar se temos ID do cliente
+        cliente_id = cliente_atualizado.get("id")
+        if not cliente_id:
+            await step_context.context.send_activity(
+                MessageFactory.text(
+                    "❌ **Ops! Tivemos um problema técnico.**\n\n"
+                    "Não conseguimos identificar sua conta no sistema. "
+                    "Por favor, tente novamente ou entre em contato com nosso suporte."
+                )
+            )
+            return await step_context.end_dialog()
+
+        print(f"DEBUG: Criando reserva de hotel para cliente ID: {cliente_id}")
+
         reserva_data = {
             "nomeHotel": nome_hotel,
             "cidade": cidade,
@@ -128,8 +161,10 @@ class NovaReservaHotelDialog(ComponentDialog):
             "numeroHospedes": int(hospedes),
             "tipoQuarto": tipo_quarto,
             "status": "CONFIRMADA",
-            "clienteId": cliente["id"]
+            "clienteId": cliente_id
         }
+
+        print(f"ENVIANDO DADOS DE HOTEL PARA API: {reserva_data}")
 
         api_client = self.api_client
         result = await api_client.criar_reserva_hospedagem(reserva_data)
@@ -137,9 +172,9 @@ class NovaReservaHotelDialog(ComponentDialog):
         if result:
             mensagem_confirmacao = (
                 f"🎉 **UHUL! Sua hospedagem está reservada!**\n\n"
-                f"✨ {cliente.get('nome', '')}, tudo certo para sua estadia incrível!\n\n"
+                f"✨ {cliente_atualizado.get('nome', '')}, tudo certo para sua estadia incrível!\n\n"
                 f"🏨 **Detalhes da sua reserva:**\n"
-                f"👤 **Hóspede Principal:** {cliente['nome']}\n"
+                f"👤 **Hóspede Principal:** {cliente_atualizado.get('nome', 'Cliente')}\n"
                 f"🏢 **Hotel:** {nome_hotel}\n"
                 f"🌍 **Cidade:** {cidade}\n"
                 f"📅 **Check-in:** {checkin}\n"

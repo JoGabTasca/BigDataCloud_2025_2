@@ -78,6 +78,22 @@ class ApiClient:
                 self.logger.error(f"Erro na requisição para reservas de voo: {e}")
                 return []
 
+    async def get_reservas_voo_by_cliente_id(self, cliente_id: str) -> List[Dict]:
+        """Busca reservas de voo por ID do cliente (do documento no Cosmos DB)"""
+        try:
+            cliente = await self.get_cliente_by_id(cliente_id)
+            if cliente:
+                reservas = cliente.get('reservasVoo', []) or []
+                print(f"DEBUG - Cliente {cliente.get('nome')} tem {len(reservas)} reservas de voo")
+                return reservas
+            else:
+                print(f"DEBUG - Cliente com ID {cliente_id} não encontrado")
+                return []
+        except Exception as e:
+            self.logger.error(f"Erro ao buscar reservas de voo por ID: {e}")
+            print(f"DEBUG - Erro ao buscar reservas: {e}")
+            return []
+
     async def get_reservas_hospedagem_by_cliente(self, cliente_cpf: str) -> List[Dict]:
         """Busca reservas de hospedagem por CPF do cliente (do documento no Cosmos DB)"""
         async with aiohttp.ClientSession() as session:
@@ -97,6 +113,22 @@ class ApiClient:
             except Exception as e:
                 self.logger.error(f"Erro na requisição para reservas de hospedagem: {e}")
                 return []
+
+    async def get_reservas_hospedagem_by_cliente_id(self, cliente_id: str) -> List[Dict]:
+        """Busca reservas de hospedagem por ID do cliente (do documento no Cosmos DB)"""
+        try:
+            cliente = await self.get_cliente_by_id(cliente_id)
+            if cliente:
+                reservas = cliente.get('reservasHospedagem', []) or []
+                print(f"DEBUG - Cliente {cliente.get('nome')} tem {len(reservas)} reservas de hospedagem")
+                return reservas
+            else:
+                print(f"DEBUG - Cliente com ID {cliente_id} não encontrado")
+                return []
+        except Exception as e:
+            self.logger.error(f"Erro ao buscar reservas de hospedagem por ID: {e}")
+            print(f"DEBUG - Erro ao buscar reservas hospedagem: {e}")
+            return []
 
     async def get_all_reservas_voo(self) -> List[Dict]:
         """Busca todas as reservas de voo de todos os clientes"""
@@ -168,59 +200,58 @@ class ApiClient:
         async with aiohttp.ClientSession() as session:
             try:
                 print(f"ENVIANDO DADOS PARA API: {reserva_data}")
-                cliente_cpf = reserva_data.get('clienteCpf')
+                cliente_id = reserva_data.get('clienteId')
 
-                if not cliente_cpf:
-                    self.logger.error("clienteCpf não fornecido na reserva")
+                if not cliente_id:
+                    self.logger.error("clienteId não fornecido na reserva")
                     return None
 
-                # Busca o cliente atual pelo CPF
-                async with session.get(f"{self.base_url}/clientes") as get_response:
-                    if get_response.status == 200:
-                        clientes = await get_response.json()
-                        cliente = None
-                        for c in clientes:
-                            if c.get('cpf') == cliente_cpf:
-                                cliente = c
-                                break
+                # Buscar o cliente pelo ID usando o endpoint específico
+                cliente = await self.get_cliente_by_id(cliente_id)
+                if not cliente:
+                    self.logger.error(f"Cliente com ID {cliente_id} não encontrado")
+                    return None
 
-                        if not cliente:
-                            self.logger.error(f"Cliente com CPF {cliente_cpf} não encontrado")
-                            return None
+                # Preparar os dados da reserva (remove clienteId)
+                nova_reserva = {k: v for k, v in reserva_data.items() if k != 'clienteId'}
 
-                        # Inicializa arrays se necessário
-                        if cliente.get('reservasVoo') is None:
-                            cliente['reservasVoo'] = []
+                # Adicionar a nova reserva ao array reservasVoo do cliente
+                if not cliente.get('reservasVoo'):
+                    cliente['reservasVoo'] = []
+                
+                cliente['reservasVoo'].append(nova_reserva)
 
-                        # Adiciona nova reserva ao array
-                        nova_reserva = {
-                            'origem': reserva_data.get('origem'),
-                            'destino': reserva_data.get('destino'),
-                            'dataIda': reserva_data.get('dataIda'),
-                            'dataVolta': reserva_data.get('dataVolta'),
-                            'numeroPassageiros': reserva_data.get('numeroPassageiros'),
-                            'classe': reserva_data.get('classe'),
-                            'status': 'CONFIRMADA'
-                        }
-                        cliente['reservasVoo'].append(nova_reserva)
-
-                        # Atualiza o cliente com PUT usando o ID
-                        cliente_id = cliente.get('id')
-                        async with session.put(f"{self.base_url}/clientes/{cliente_id}", json=cliente) as put_response:
-                            if put_response.status == 200:
-                                result = await put_response.json()
-                                print(f"RESERVA DE VOO CRIADA COM SUCESSO: {result}")
-                                return result
-                            else:
-                                error_text = await put_response.text()
-                                self.logger.error(f"Erro ao atualizar cliente: {put_response.status} - {error_text}")
-                                return None
+                # Atualizar o cliente completo no Cosmos DB via PUT
+                async with session.put(f"{self.base_url}/clientes/{cliente_id}", json=cliente) as response:
+                    if response.status == 200 or response.status == 201:
+                        return nova_reserva
                     else:
-                        self.logger.error(f"Erro ao buscar cliente: {get_response.status}")
+                        error_text = await response.text()
+                        self.logger.error(f"Erro ao atualizar cliente: {response.status} - {error_text}")
+                        print(f"ERRO PUT CLIENTE: {response.status} - {error_text}")
+                        return None
+
+            except Exception as e:
+                self.logger.error(f"Erro na criação de reserva de voo: {e}")
+                print(f"ERRO EXCEÇÃO RESERVA VOO: {e}")
+                return None
+
+    async def get_cliente_by_id(self, cliente_id: str) -> Optional[Dict]:
+        """Busca cliente por ID"""
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.get(f"{self.base_url}/clientes") as response:
+                    if response.status == 200:
+                        clientes = await response.json()
+                        for cliente in clientes:
+                            if cliente.get('id') == cliente_id:
+                                return cliente
+                        return None
+                    else:
+                        self.logger.error(f"Erro ao buscar clientes: {response.status}")
                         return None
             except Exception as e:
-                self.logger.error(f"Erro na requisição para criar reserva de voo: {e}")
-                print(f"ERRO EXCEÇÃO: {e}")
+                self.logger.error(f"Erro na busca de cliente por ID: {e}")
                 return None
 
     async def criar_reserva_hospedagem(self, reserva_data: Dict) -> Optional[Dict]:
@@ -228,59 +259,40 @@ class ApiClient:
         async with aiohttp.ClientSession() as session:
             try:
                 print(f"ENVIANDO DADOS DE HOSPEDAGEM PARA API: {reserva_data}")
-                cliente_cpf = reserva_data.get('clienteCpf')
+                cliente_id = reserva_data.get('clienteId')
 
-                if not cliente_cpf:
-                    self.logger.error("clienteCpf não fornecido na reserva")
+                if not cliente_id:
+                    self.logger.error("clienteId não fornecido na reserva")
                     return None
 
-                # Busca o cliente atual pelo CPF
-                async with session.get(f"{self.base_url}/clientes") as get_response:
-                    if get_response.status == 200:
-                        clientes = await get_response.json()
-                        cliente = None
-                        for c in clientes:
-                            if c.get('cpf') == cliente_cpf:
-                                cliente = c
-                                break
+                # Buscar o cliente pelo ID
+                cliente = await self.get_cliente_by_id(cliente_id)
+                if not cliente:
+                    self.logger.error(f"Cliente com ID {cliente_id} não encontrado")
+                    return None
 
-                        if not cliente:
-                            self.logger.error(f"Cliente com CPF {cliente_cpf} não encontrado")
-                            return None
+                # Preparar os dados da reserva (remove clienteId)
+                nova_reserva = {k: v for k, v in reserva_data.items() if k != 'clienteId'}
 
-                        # Inicializa arrays se necessário
-                        if cliente.get('reservasHospedagem') is None:
-                            cliente['reservasHospedagem'] = []
+                # Adicionar a nova reserva ao array reservasHospedagem do cliente
+                if not cliente.get('reservasHospedagem'):
+                    cliente['reservasHospedagem'] = []
+                
+                cliente['reservasHospedagem'].append(nova_reserva)
 
-                        # Adiciona nova reserva ao array
-                        nova_reserva = {
-                            'cidade': reserva_data.get('cidade'),
-                            'nomeHotel': reserva_data.get('nomeHotel'),
-                            'dataCheckin': reserva_data.get('dataCheckin'),
-                            'dataCheckout': reserva_data.get('dataCheckout'),
-                            'numeroHospedes': reserva_data.get('numeroHospedes'),
-                            'tipoQuarto': reserva_data.get('tipoQuarto'),
-                            'status': 'CONFIRMADA'
-                        }
-                        cliente['reservasHospedagem'].append(nova_reserva)
-
-                        # Atualiza o cliente com PUT usando o ID
-                        cliente_id = cliente.get('id')
-                        async with session.put(f"{self.base_url}/clientes/{cliente_id}", json=cliente) as put_response:
-                            if put_response.status == 200:
-                                result = await put_response.json()
-                                print(f"RESERVA DE HOSPEDAGEM CRIADA COM SUCESSO: {result}")
-                                return result
-                            else:
-                                error_text = await put_response.text()
-                                self.logger.error(f"Erro ao atualizar cliente: {put_response.status} - {error_text}")
-                                return None
+                # Atualizar o cliente completo no Cosmos DB via PUT
+                async with session.put(f"{self.base_url}/clientes/{cliente_id}", json=cliente) as response:
+                    if response.status == 200 or response.status == 201:
+                        return nova_reserva
                     else:
-                        self.logger.error(f"Erro ao buscar cliente: {get_response.status}")
+                        error_text = await response.text()
+                        self.logger.error(f"Erro ao atualizar cliente: {response.status} - {error_text}")
+                        print(f"ERRO PUT CLIENTE HOSPEDAGEM: {response.status} - {error_text}")
                         return None
+
             except Exception as e:
-                self.logger.error(f"Erro na requisição para criar reserva de hospedagem: {e}")
-                print(f"ERRO EXCEÇÃO HOSPEDAGEM: {e}")
+                self.logger.error(f"Erro na criação de reserva de hospedagem: {e}")
+                print(f"ERRO EXCEÇÃO RESERVA HOSPEDAGEM: {e}")
                 return None
 
     async def cancelar_reserva_voo(self, cliente_cpf: str, reserva_index: int) -> Optional[Dict]:

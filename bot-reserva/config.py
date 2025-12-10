@@ -13,8 +13,8 @@ class DefaultConfig:
 
     # API Configuration
     API_BASE_URL = os.environ.get("API_BASE_URL", "https://chatbot-api-jgk-grbhazazdygrfsec.canadacentral-01.azurewebsites.net")
-    CLU_ENDPOINT = "https://botluis-hotelreservation.cognitiveservices.azure.com"
-    CLU_KEY = "6B8HAde3WPISgrsXoFxD1CDH58WOA46khHKrGNk2VZx3TdmwOpJKJQQJ99BKACBsN54XJ3w3AAAaACOG9H9C"
-    CLU_PROJECT = "BotLuis-HotelReservation"
-    CLU_DEPLOYMENT_NAME = "1o-mini"
+    CLU_ENDPOINT = os.environ.get("CLU_ENDPOINT", "https://botluis-hotelreservation.cognitiveservices.azure.com")
+    CLU_KEY = os.environ.get("CLU_KEY", "6B8HAde3WPISgrsXoFxD1CDH58WOA46khHKrGNk2VZx3TdmwOpJKJQQJ99BKACBsN54XJ3w3AAAaACOG9H9C")
+    CLU_PROJECT = os.environ.get("CLU_PROJECT", "BotLuis-HotelReservation")
+    CLU_DEPLOYMENT_NAME = os.environ.get("CLU_DEPLOYMENT_NAME", "1o-mini")
 

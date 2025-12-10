@@ -53,6 +53,11 @@ class AjudaDialog(ComponentDialog):
 
     async def final_step(self, step_context: WaterfallStepContext):
         escolha = step_context.result
+        
+        # Obter dados do cliente das opções do diálogo
+        cliente = {}
+        if step_context.options and isinstance(step_context.options, dict):
+            cliente = step_context.options.get("cliente", {})
 
         request_payload = {
             "kind": "Conversation",
@@ -76,23 +81,23 @@ class AjudaDialog(ComponentDialog):
         top_intent = response["result"]["prediction"]["topIntent"]
 
         if top_intent == "ReservarHotel":
-            #Comeca o dialog de reserva de hotel
-            return await step_context.begin_dialog("NovaReservaHotelDialog")
+            #Comeca o dialog de reserva de hotel passando o cliente
+            return await step_context.begin_dialog("NovaReservaHotelDialog", {"cliente": cliente})
         elif top_intent == "ReservarVoo":
-            #Comeca o dialog de reserva de voo
-            return await step_context.begin_dialog("NovaReservaVooDialog")
+            #Comeca o dialog de reserva de voo passando o cliente
+            return await step_context.begin_dialog("NovaReservaVooDialog", {"cliente": cliente})
         elif top_intent == "CancelarVoo":
-            #Comeca o dialog de cancelamento de voo
-            return await step_context.begin_dialog("CancelarVooDialog")
+            #Comeca o dialog de cancelamento de voo passando o cliente
+            return await step_context.begin_dialog("CancelarReservaDialog", {"cliente": cliente})
         elif top_intent == "CancelarHotel":
-            #Comeca o dialog de cancelamento de hotel
-            return await step_context.begin_dialog("CancelarReservaDialog")
+            #Comeca o dialog de cancelamento de hotel passando o cliente
+            return await step_context.begin_dialog("CancelarReservaDialog", {"cliente": cliente})
         elif top_intent == "ConsultarVoo":
-            #Comeca o dialog de consulta de voo
-            return await step_context.begin_dialog("ConsultarVooDialog")
+            #Comeca o dialog de consulta de voo passando o cliente
+            return await step_context.begin_dialog("ConsultarVooDialog", {"cliente": cliente})
         elif top_intent == "ConsultarHotel":
-            #Comeca o dialog de consulta de hotel
-            return await step_context.begin_dialog("ConsultarHoteisDialog")
+            #Comeca o dialog de consulta de hotel passando o cliente
+            return await step_context.begin_dialog("ConsultarHoteisDialog", {"cliente": cliente})
         else:
             await step_context.context.send_activity(
                 MessageFactory.text(

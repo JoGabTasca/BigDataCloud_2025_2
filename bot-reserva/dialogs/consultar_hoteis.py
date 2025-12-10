@@ -70,6 +70,18 @@ class ConsultarHoteisDialog(ComponentDialog):
         if step_context.result and isinstance(step_context.result, dict):
             step_context.values["cliente"] = step_context.result
 
+        # Verificar se temos cliente, senão obtê-lo das options
+        if "cliente" not in step_context.values:
+            if step_context.options and isinstance(step_context.options, dict):
+                cliente = step_context.options.get("cliente", {})
+                step_context.values["cliente"] = cliente
+            else:
+                # Se não temos cliente, retornar erro
+                await step_context.context.send_activity(
+                    MessageFactory.text("❌ Erro: Informações do cliente não encontradas. Retornando ao menu principal.")
+                )
+                return await step_context.end_dialog()
+
         cliente = step_context.values["cliente"]
 
         choices = [
@@ -93,7 +105,7 @@ class ConsultarHoteisDialog(ComponentDialog):
         cliente = step_context.values["cliente"]
 
         if escolha == "Minhas reservas":
-            reservas = await self.api_client.get_reservas_hospedagem_by_cliente(cliente["id"])
+            reservas = await self.api_client.get_reservas_hospedagem_by_cliente_id(cliente["id"])
 
             if not reservas:
                 await step_context.context.send_activity(

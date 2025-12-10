@@ -85,11 +85,19 @@ class CancelarReservaDialog(ComponentDialog):
 
     async def listar_reservas_step(self, step_context: WaterfallStepContext):
         tipo_reserva = step_context.result.value
+        
+        # Verificar se temos cliente
+        if "cliente" not in step_context.values:
+            await step_context.context.send_activity(
+                MessageFactory.text("❌ Erro: Informações do cliente não encontradas. Retornando ao menu principal.")
+            )
+            return await step_context.end_dialog()
+            
         cliente = step_context.values["cliente"]
         step_context.values["tipo_reserva"] = tipo_reserva
 
         if tipo_reserva == "Reservas de Voo":
-            reservas = await self.api_client.get_reservas_voo_by_cliente(cliente["id"])
+            reservas = await self.api_client.get_reservas_voo_by_cliente_id(cliente["id"])
             reservas_ativas = [r for r in reservas if r["status"] == "CONFIRMADA"]
 
             if not reservas_ativas:
@@ -119,7 +127,7 @@ class CancelarReservaDialog(ComponentDialog):
                 mensagem += f"   Data: {data_partida} | Classe: {reserva.get('classe', 'N/A')}\n\n"
 
         else:  # hospedagem
-            reservas = await self.api_client.get_reservas_hospedagem_by_cliente(cliente["id"])
+            reservas = await self.api_client.get_reservas_hospedagem_by_cliente_id(cliente["id"])
             reservas_ativas = [r for r in reservas if r["status"] == "CONFIRMADA"]
 
             if not reservas_ativas:
@@ -157,17 +165,18 @@ class CancelarReservaDialog(ComponentDialog):
         escolha_reserva = step_context.result.value
         tipo_reserva = step_context.values["tipo_reserva"]
         reservas = step_context.values["reservas"]
+        cliente = step_context.values["cliente"]
 
         # Extrair o número da reserva do texto escolhido
         try:
             numero_reserva = int(escolha_reserva.split(":")[0].split()[-1]) - 1  # "Reserva 1:" -> 0
             reserva_selecionada = reservas[numero_reserva]
 
-            # Cancelar via API
+            # Cancelar via API - precisa do CPF do cliente e do índice da reserva no array
             if tipo_reserva == "Reservas de Voo":
-                resultado = await self.api_client.cancelar_reserva_voo(reserva_selecionada['id'])
+                resultado = await self.api_client.cancelar_reserva_voo(cliente["cpf"], numero_reserva)
             else:  # Reservas de Hospedagem
-                resultado = await self.api_client.cancelar_reserva_hospedagem(reserva_selecionada['id'])
+                resultado = await self.api_client.cancelar_reserva_hospedagem(cliente["cpf"], numero_reserva)
 
             if resultado:
                 # Cancelamento bem-sucedido
