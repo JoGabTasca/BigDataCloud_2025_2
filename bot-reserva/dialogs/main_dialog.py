@@ -89,7 +89,7 @@ class MainDialog(ComponentDialog):
             return await step_context.begin_dialog("ConsultarHoteisDialog")
         elif option == "Cancelar Reservas":
             return await step_context.begin_dialog("CancelarReservaDialog")
-        elif option == "ℹ️ Ajuda":
+        elif option == "Preciso de Ajuda":
             return await step_context.begin_dialog("AjudaDialog")
 
         # Retorna ao menu principal após qualquer ação
@@ -98,3 +98,6 @@ class MainDialog(ComponentDialog):
     async def return_to_menu_step(self, step_context: WaterfallStepContext):
         # Este step sempre retorna ao menu principal após qualquer diálogo
         return await step_context.replace_dialog("MainDialog")
+
+
+
